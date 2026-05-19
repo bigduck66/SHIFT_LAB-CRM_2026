@@ -1,121 +1,461 @@
-# CRM Система
-
-Упрощенная CRM-система для управления продавцами и транзакциями с функциями аналитики.
-
-## Технологии
-
-- Java 17
-- Spring Boot 4.0.6
-- Spring Data JPA (Hibernate 7.2)
-- PostgreSQL / H2
-- Gradle 9.4
-- Lombok
-- JUnit 5 + Mockito
-
-## Функциональность
-
-### Продавцы (Sellers)
-- Создание, чтение, обновление, удаление (CRUD)
-- Мягкое удаление (active = false) — сохраняется историчность
-
-### Транзакции (Transactions)
-- Создание с привязкой к продавцу
-- Поддержка типов оплат: CASH, CARD, TRANSFER
-- Получение всех транзакций или транзакций конкретного продавца
-
-### Аналитика
-- Самый продуктивный продавец за период (день/месяц/квартал/год)
-- Продавцы с суммой меньше указанной за период
-- Лучший период продавца — алгоритм Кадане
-
-## Установка и запуск
-
-### Требования
-- JDK 17+
-- PostgreSQL (для продакшен режима)
-
-### Запуск в режиме разработки (H2 в памяти)
-
+```bash
 cd crm
 ./gradlew bootRun
+```
 
-Приложение доступно на http://localhost:8080
+Приложение доступно на:
+
+```text
+http://localhost:8080
+```
 
 ### Запуск с PostgreSQL
 
-Создайте базу данных crm_db, затем:
+Создайте базу данных `crm_db`, затем:
 
+```bash
 ./gradlew bootRun --args='--spring.profiles.active=prod'
+```
 
 ### H2 Console (только dev)
 
+```text
 URL: http://localhost:8080/h2-console
 JDBC URL: jdbc:h2:mem:crmdb
 Username: sa
-Password: (пусто)
+Password:
+```
 
 ## API Endpoints
 
 ### Продавцы
 
-GET /api/sellers - Все активные продавцы
-GET /api/sellers/{id} - Продавец по ID
-POST /api/sellers - Создать продавца
-PUT /api/sellers/{id} - Обновить продавца
-DELETE /api/sellers/{id} - Удалить (мягкое)
+```http
+GET /api/sellers
+```
+
+Получить всех активных продавцов.
+
+```http
+GET /api/sellers/{id}
+```
+
+Получить продавца по ID.
+
+```http
+POST /api/sellers
+```
+
+Создать продавца.
+
+```http
+PUT /api/sellers/{id}
+```
+
+Обновить продавца.
+
+```http
+DELETE /api/sellers/{id}
+```
+
+Удалить продавца мягко.
+
+---
 
 ### Транзакции
 
-GET /api/transactions - Все транзакции
-GET /api/transactions/{id} - Транзакция по ID
-POST /api/transactions - Создать транзакцию
-GET /api/transactions/seller/{sellerId} - Транзакции продавца
+```http
+GET /api/transactions
+```
+
+Получить все транзакции.
+
+```http
+GET /api/transactions/{id}
+```
+
+Получить транзакцию по ID.
+
+```http
+POST /api/transactions
+```
+
+Создать транзакцию.
+
+```http
+GET /api/transactions/seller/{sellerId}
+```
+
+Получить транзакции конкретного продавца.
+
+---
 
 ### Аналитика
 
-GET /api/analytics/top-seller?start=...&end=... - Самый продуктивный продавец
-GET /api/analytics/sellers-below?start=...&end=...&maxAmount=... - Продавцы с суммой меньше
-GET /api/analytics/sellers/{id}/best-period - Лучший период продавца
+```http
+GET /api/analytics/top-seller?start=...&end=...
+```
 
-## Примеры использования
+Получить самого продуктивного продавца за период.
 
-Создание продавца:
-curl -X POST http://localhost:8080/api/sellers -H "Content-Type: application/json" -d '{"name": "Иван Петров", "contactInfo": "ivan@email.com"}'
+```http
+GET /api/analytics/sellers-below?start=...&end=...&maxAmount=...
+```
 
-Все продавцы:
-curl http://localhost:8080/api/sellers
+Получить продавцов с суммой транзакций меньше указанной.
 
-Обновление продавца:
-curl -X PUT http://localhost:8080/api/sellers/1 -H "Content-Type: application/json" -d '{"name": "Иван Кузьмин", "contactInfo": "new@email.com"}'
+```http
+GET /api/analytics/sellers/{id}/best-period
+```
 
-Удаление продавца:
-curl -X DELETE http://localhost:8080/api/sellers/2
+Получить лучший период продавца.
 
-Создание транзакции:
-curl -X POST http://localhost:8080/api/transactions -H "Content-Type: application/json" -d '{"sellerId": 1, "amount": 5000.00, "paymentType": "CASH"}'
+---
 
-Транзакции продавца:
-curl http://localhost:8080/api/transactions/seller/1
+## Примеры использования API
 
-Самый продуктивный продавец:
-curl "http://localhost:8080/api/analytics/top-seller?start=2020-01-01T00:00:00&end=2030-01-01T00:00:00"
+### Создание продавца
 
-Продавцы с суммой меньше 10000:
-curl "http://localhost:8080/api/analytics/sellers-below?start=2020-01-01T00:00:00&end=2030-01-01T00:00:00&maxAmount=10000"
+```http
+POST /api/sellers
+Content-Type: application/json
+```
 
-Лучший период продавца:
-curl "http://localhost:8080/api/analytics/sellers/1/best-period"
+Body:
 
-Ошибка 404:
-curl http://localhost:8080/api/sellers/999
+```json
+{
+  "name": "Иван Петров",
+  "contactInfo": "ivan@email.com"
+}
+```
 
-Ошибка 400:
-curl -X POST http://localhost:8080/api/sellers -H "Content-Type: application/json" -d '{"name": ""}'
+Пример успешного ответа:
+
+```json
+{
+  "id": 1,
+  "name": "Иван Петров",
+  "contactInfo": "ivan@email.com",
+  "registrationDate": "2026-05-17T12:00:00"
+}
+```
+
+---
+
+### Получение всех продавцов
+
+```http
+GET /api/sellers
+```
+
+Пример успешного ответа:
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Иван Петров",
+    "contactInfo": "ivan@email.com",
+    "registrationDate": "2026-05-17T12:00:00"
+  },
+  {
+    "id": 2,
+    "name": "Петр Иванов",
+    "contactInfo": "petr@email.com",
+    "registrationDate": "2026-05-17T12:10:00"
+  }
+]
+```
+
+---
+
+### Получение продавца по ID
+
+```http
+GET /api/sellers/1
+```
+
+Пример успешного ответа:
+
+```json
+{
+  "id": 1,
+  "name": "Иван Петров",
+  "contactInfo": "ivan@email.com",
+  "registrationDate": "2026-05-17T12:00:00"
+}
+```
+
+---
+
+### Обновление продавца
+
+```http
+PUT /api/sellers/1
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "name": "Иван Кузьмин",
+  "contactInfo": "new@email.com"
+}
+```
+
+Пример успешного ответа:
+
+```json
+{
+  "id": 1,
+  "name": "Иван Кузьмин",
+  "contactInfo": "new@email.com",
+  "registrationDate": "2026-05-17T12:00:00"
+}
+```
+
+---
+
+### Удаление продавца
+
+```http
+DELETE /api/sellers/2
+```
+
+Пример успешного ответа:
+
+```text
+204 No Content
+```
+
+---
+
+### Создание транзакции
+
+```http
+POST /api/transactions
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "sellerId": 1,
+  "amount": 5000.00,
+  "paymentType": "CASH"
+}
+```
+
+Пример успешного ответа:
+
+```json
+{
+  "id": 1,
+  "sellerId": 1,
+  "sellerName": "Иван Кузьмин",
+  "amount": 5000.00,
+  "paymentType": "CASH",
+  "transactionDate": "2026-05-17T12:30:00"
+}
+```
+
+---
+
+### Получение всех транзакций
+
+```http
+GET /api/transactions
+```
+
+Пример успешного ответа:
+
+```json
+[
+  {
+    "id": 1,
+    "sellerId": 1,
+    "sellerName": "Иван Кузьмин",
+    "amount": 5000.00,
+    "paymentType": "CASH",
+    "transactionDate": "2026-05-17T12:30:00"
+  }
+]
+```
+
+---
+
+### Получение транзакции по ID
+
+```http
+GET /api/transactions/1
+```
+
+Пример успешного ответа:
+
+```json
+{
+  "id": 1,
+  "sellerId": 1,
+  "sellerName": "Иван Кузьмин",
+  "amount": 5000.00,
+  "paymentType": "CASH",
+  "transactionDate": "2026-05-17T12:30:00"
+}
+```
+
+---
+
+### Получение транзакций продавца
+
+```http
+GET /api/transactions/seller/1
+```
+
+Пример успешного ответа:
+
+```json
+[
+  {
+    "id": 1,
+    "sellerId": 1,
+    "sellerName": "Иван Кузьмин",
+    "amount": 5000.00,
+    "paymentType": "CASH",
+    "transactionDate": "2026-05-17T12:30:00"
+  },
+  {
+    "id": 2,
+    "sellerId": 1,
+    "sellerName": "Иван Кузьмин",
+    "amount": 3000.00,
+    "paymentType": "CARD",
+    "transactionDate": "2026-05-17T13:00:00"
+  }
+]
+```
+
+---
+
+### Самый продуктивный продавец
+
+```http
+GET /api/analytics/top-seller?start=2020-01-01T00:00:00&end=2030-01-01T00:00:00
+```
+
+Пример успешного ответа:
+
+```json
+{
+  "sellerId": 1,
+  "sellerName": "Иван Кузьмин",
+  "totalAmount": 8000.00
+}
+```
+
+---
+
+### Продавцы с суммой меньше 10000
+
+```http
+GET /api/analytics/sellers-below?start=2020-01-01T00:00:00&end=2030-01-01T00:00:00&maxAmount=10000
+```
+
+Пример успешного ответа:
+
+```json
+[
+  {
+    "sellerId": 1,
+    "sellerName": "Иван Кузьмин",
+    "totalAmount": 8000.00
+  },
+  {
+    "sellerId": 2,
+    "sellerName": "Петр Иванов",
+    "totalAmount": 3000.00
+  }
+]
+```
+
+---
+
+### Лучший период продавца
+
+```http
+GET /api/analytics/sellers/1/best-period
+```
+
+Пример успешного ответа:
+
+```json
+{
+  "sellerId": 1,
+  "sellerName": "Иван Кузьмин",
+  "startDate": "2026-05-17T12:30:00",
+  "endDate": "2026-05-17T13:00:00",
+  "transactionCount": 2
+}
+```
+
+---
+
+## Примеры ошибок
+
+### Ошибка 404
+
+```http
+GET /api/sellers/999
+```
+
+Пример ответа:
+
+```json
+{
+  "status": 404,
+  "error": "Not Found",
+  "message": "Seller not found with id: 999",
+  "timestamp": "2026-05-17T12:00:00"
+}
+```
+
+---
+
+### Ошибка 400
+
+```http
+POST /api/sellers
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "name": ""
+}
+```
+
+Пример ответа:
+
+```json
+{
+  "status": 400,
+  "error": "Bad Request",
+  "message": "name: must not be blank",
+  "timestamp": "2026-05-17T12:00:00"
+}
+```
+
+---
 
 ## Запуск тестов
 
+```bash
 ./gradlew test
-
+```
 
 ## Особенности реализации
 
