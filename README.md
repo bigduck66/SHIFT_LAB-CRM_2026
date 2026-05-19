@@ -116,40 +116,6 @@ curl -X POST http://localhost:8080/api/sellers -H "Content-Type: application/jso
 
 ./gradlew test
 
-## Структура проекта
-
-src/main/java/com/example/crm/
-├── CrmApplication.java
-├── controller/
-│   ├── SellerController.java
-│   ├── TransactionController.java
-│   └── AnalyticsController.java
-├── service/
-│   ├── SellerService.java
-│   ├── TransactionService.java
-│   └── AnalyticsService.java
-├── repository/
-│   ├── SellerRepository.java
-│   └── TransactionRepository.java
-├── model/
-│   ├── entity/
-│   │   ├── Seller.java
-│   │   └── Transaction.java
-│   └── enums/
-│       └── PaymentType.java
-├── dto/
-│   ├── request/
-│   │   ├── CreateSellerRequest.java
-│   │   └── CreateTransactionRequest.java
-│   └── response/
-│       ├── SellerResponse.java
-│       ├── TransactionResponse.java
-│       ├── TopSellerResponse.java
-│       ├── SellerBelowResponse.java
-│       └── BestPeriodResponse.java
-└── exception/
-    ├── ResourceNotFoundException.java
-    └── GlobalExceptionHandler.java
 
 ## Особенности реализации
 
